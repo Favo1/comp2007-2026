@@ -1,0 +1,3 @@
+repository "TreasureQuest/TreasureQuest@5773993407080@cloud"
+  path "/"
+    smartbranch "/main"
