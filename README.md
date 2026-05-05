@@ -25,4 +25,4 @@ Can you find all 5 treasures and escape the maze?
 
 The 'Treasure Quest.exe' file lives inside the Build Folder.
 
-The 'Treasure Quest.exe' file lives inside the Build Folder. When running the .exe, ensure you run it directly from the 'Build' folder so the executable can find all its dependencies.
+When running the .exe, ensure you run it directly from the 'Build' folder so the executable can find all its dependencies.
