@@ -22,3 +22,5 @@ V — Switch between first-person and follow camera
 Escape — Pause / Resume
 Walk up to a chest to collect it
 Can you find all 5 treasures and escape the maze?
+
+The 'Treasure Quest.exe' file lives inside the Build Folder
