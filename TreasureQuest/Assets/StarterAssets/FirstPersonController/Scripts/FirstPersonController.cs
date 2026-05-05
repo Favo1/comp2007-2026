@@ -91,7 +91,7 @@ namespace StarterAssets
 
 		private void Awake()
 		{
-			// get a reference to our main camera
+			// get a reference to the main camera
 			if (_mainCamera == null)
 			{
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
@@ -113,7 +113,7 @@ namespace StarterAssets
 			Time.timeScale = 1f;
 			Cursor.lockState = CursorLockMode.Locked;
 
-			// reset our timeouts on start
+			// reset the timeouts on start
 			_jumpTimeoutDelta = JumpTimeout;
 			_fallTimeoutDelta = FallTimeout;
 		}
@@ -169,7 +169,7 @@ namespace StarterAssets
 				_cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier;
 				_rotationVelocity = _input.look.x * RotationSpeed * deltaTimeMultiplier;
 
-				// clamp our pitch rotation
+				// clamp pitch rotation
 				_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
 				// Update Cinemachine camera target pitch
@@ -187,8 +187,8 @@ namespace StarterAssets
 
 			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
-			// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-			// if there is no input, set the target speed to 0
+			
+			// if there is no input, target speed to 0
 			if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
 			// a reference to the players current horizontal velocity
@@ -201,7 +201,7 @@ namespace StarterAssets
 			if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
 			{
 				// creates curved result rather than a linear one giving a more organic speed change
-				// note T in Lerp is clamped, so we don't need to clamp our speed
+				// T in Lerp is clamped, no need don't need to clamp the speed
 				_speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.deltaTime * SpeedChangeRate);
 
 				// round speed to 3 decimal places
@@ -215,7 +215,7 @@ namespace StarterAssets
 			// normalise input direction
 			Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+			// Vector2's != operator uses approximation 
 			// if there is a move input rotate player when the player is moving
 			if (_input.move != Vector2.zero)
 			{
@@ -234,7 +234,7 @@ namespace StarterAssets
 				// reset the fall timeout timer
 				_fallTimeoutDelta = FallTimeout;
 
-				// stop our velocity dropping infinitely when grounded
+				// stop the velocity dropping infinitely when grounded
 				if (_verticalVelocity < 0.0f)
 				{
 					_verticalVelocity = -2f;

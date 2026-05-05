@@ -24,9 +24,7 @@ public static class MazeBuilder
     // corridor face (wall half-thickness ≈ 0.185 m → use 0.20 m).
     // Wall_Light geometry self-positions near the top inside the FBX, so
     // it shares the wall's y=0 base and needs no face offset.
-    // Wall_Lamp mesh: Y ∈ [−0.181, +0.181] centred at pivot, Z ∈ [0, 0.1] protrudes outward.
     // LAMP_Y = 2.5 → world y = 5.0 m ≈ 62 % of 8 m wall (first grey brick above centre).
-    // LAMP_FACE_OFFSET = 0.20 → lamp back clears wall front-face (half-thickness 0.185 m) by ~1.5 cm.
     const float LAMP_Y           = 3.0f;   // local Y above wall base
     const float LAMP_FACE_OFFSET = 0.20f;  // local offset away from wall face
 
@@ -73,6 +71,10 @@ public static class MazeBuilder
         exitCol  = COLS / 2;
         hLine[0,    entryCol] = false;
         hLine[ROWS, exitCol]  = false;
+
+        // Force a clear corridor so entry/exit are never dead-end pockets
+        hLine[1,        entryCol] = false;
+        hLine[ROWS - 1, exitCol]  = false;
 
         // Decide which walls get lamps / lights based on adjacent dead-ends
         AssignSpecialWalls();
@@ -409,8 +411,8 @@ public static class MazeBuilder
     }
 
     // Scatter CHEST_COUNT chests on random accessible floor cells.
-    // Each chest gets its own world-space position (no scaled parent) so
-    // ChestCollectible distance checks work correctly at runtime.
+    // One chest is always placed at the exit cell (ROWS-1, exitCol).
+    // The remaining CHEST_COUNT-1 are placed randomly with a minimum spacing.
     static void SpawnChests()
     {
         if (pfbChest == null)
@@ -419,11 +421,24 @@ public static class MazeBuilder
             return;
         }
 
-        // Collect every interior cell (skip row 0 = entry area)
+        var container = new GameObject("MazeChests");
+        Undo.RegisterCreatedObjectUndo(container, "MazeGen chests");
+
+        const int MIN_CELL_GAP = 3;
+        var placed_cells = new List<(int r, int c)>();
+        int placed = 0;
+
+        // --- Guaranteed exit chest (always chest 0) ---
+        int er = ROWS - 1, ec = exitCol;
+        PlaceChest(container, er, ec, placed++);
+        placed_cells.Add((er, ec));
+
+        // --- Random interior chests ---
         var cells = new List<(int r, int c)>();
         for (int r = 2; r < ROWS - 1; r++)
             for (int c = 0; c < COLS; c++)
-                cells.Add((r, c));
+                if (r != er || c != ec)           // exclude the exit cell
+                    cells.Add((r, c));
 
         // Fisher-Yates shuffle
         for (int i = cells.Count - 1; i > 0; i--)
@@ -432,18 +447,10 @@ public static class MazeBuilder
             var tmp = cells[i]; cells[i] = cells[j]; cells[j] = tmp;
         }
 
-        var container = new GameObject("MazeChests");
-        Undo.RegisterCreatedObjectUndo(container, "MazeGen chests");
-
-        const int MIN_CELL_GAP = 3; // chests must be at least this many cells apart
-        var placed_cells = new List<(int r, int c)>();
-
-        int placed = 0;
         foreach (var (r, c) in cells)
         {
             if (placed >= CHEST_COUNT) break;
 
-            // Reject if too close to an already-placed chest
             bool tooClose = false;
             foreach (var (pr, pc) in placed_cells)
             {
@@ -451,23 +458,25 @@ public static class MazeBuilder
                 { tooClose = true; break; }
             }
             if (tooClose) continue;
+
             placed_cells.Add((r, c));
-
-            // World-space cell centre (parent scale already applied via multiply)
-            float wx = (c * CELL + CELL * 0.5f) * MAZE_SCALE;
-            float wz = (r * CELL + CELL * 0.5f) * MAZE_SCALE;
-
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(pfbChest);
-            go.transform.SetParent(container.transform, true);
-            go.transform.position    = new Vector3(wx, 0.8f, wz);
-            go.transform.rotation    = Quaternion.Euler(0f, 180f, 0f);
-            go.transform.localScale  = new Vector3(100f, 100f, 100f);
-            go.name = "LootChest_" + placed;
-            Undo.RegisterCreatedObjectUndo(go, "MazeGen chest");
-            placed++;
+            PlaceChest(container, r, c, placed++);
         }
 
-        Debug.Log("[MazeGen] Spawned " + placed + " chests.");
+        Debug.Log("[MazeGen] Spawned " + placed + " chests (exit chest at row=" + er + " col=" + ec + ").");
+    }
+
+    static void PlaceChest(GameObject container, int r, int c, int index)
+    {
+        float wx = (c * CELL + CELL * 0.5f) * MAZE_SCALE;
+        float wz = (r * CELL + CELL * 0.5f) * MAZE_SCALE;
+        var go = (GameObject)PrefabUtility.InstantiatePrefab(pfbChest);
+        go.transform.SetParent(container.transform, true);
+        go.transform.position   = new Vector3(wx, 0.8f, wz);
+        go.transform.rotation   = Quaternion.Euler(0f, 180f, 0f);
+        go.transform.localScale = new Vector3(100f, 100f, 100f);
+        go.name = index == 0 ? "LootChest_Exit" : "LootChest_" + index;
+        Undo.RegisterCreatedObjectUndo(go, "MazeGen chest");
     }
 
     // ---- Utilities -------------------------------------------------------

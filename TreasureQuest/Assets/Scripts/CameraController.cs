@@ -4,9 +4,9 @@ using Unity.Cinemachine;
 using UnityEngine.InputSystem;
 #endif
 
-/// Manages the FPS camera and the third-person follow camera.
-/// Press V (or the configured key) in-game to switch between them.
-/// Attach to any persistent scene GameObject (e.g. GameManager or PlayerCapsule).
+// Manages the FPS camera and the third-person follow camera.
+// Press V (or the configured key) in-game to switch between them.
+// Attach to any persistent scene GameObject (e.g. GameManager or PlayerCapsule).
 public class CameraController : MonoBehaviour
 {
     [Header("Virtual Cameras")]

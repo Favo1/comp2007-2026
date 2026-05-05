@@ -1,24 +1,17 @@
 using UnityEngine;
 
+/// Attach one instance per scene. Buttons call PlaySelect() via OnClick.
+/// Uses PlayClipAtPoint so no persistent AudioSource is needed — works
+/// reliably across scene loads without singleton or DontDestroyOnLoad.
 public class UIAudioManager : MonoBehaviour
 {
-    public static UIAudioManager instance;
-
     public AudioClip selectSound;
-    private AudioSource audioSource;
-
-    void Awake()
-    {
-        if (instance != null) { Destroy(gameObject); return; }
-        instance = this;
-        DontDestroyOnLoad(gameObject);
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
-    }
 
     public void PlaySelect()
     {
-        if (selectSound != null)
-            audioSource.PlayOneShot(selectSound);
+        if (selectSound == null) return;
+        AudioSource.PlayClipAtPoint(selectSound, Camera.main != null
+            ? Camera.main.transform.position
+            : Vector3.zero);
     }
 }

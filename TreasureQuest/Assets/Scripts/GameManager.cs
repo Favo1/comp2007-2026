@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         if (instance != null)
         {
-            var fpc = FindObjectOfType<StarterAssets.FirstPersonController>();
+            var fpc = FindFirstObjectByType<StarterAssets.FirstPersonController>();
             if (fpc != null && fpc.pausePanel != null)
                 fpc.pausePanel.SetActive(false);
         }
@@ -59,6 +59,6 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene("StartScreen");
     }
 }
